@@ -1,0 +1,25 @@
+--- dwm.c.o	2012-03-26 22:00:54.000000000 +0200
++++ dwm.c	2012-03-26 22:05:38.809587732 +0200
+@@ -939,7 +939,8 @@ focus(Client *c) {
+ 		detachstack(c);
+ 		attachstack(c);
+ 		grabbuttons(c, True);
+-		XSetWindowBorder(dpy, c->win, dc.colors[1][ColBorder]);
++		if(c->mon->lt[c->mon->sellt]->arrange != monocle || c->isfloating)
++			XSetWindowBorder(dpy, c->win, dc.colors[1][ColBorder]);
+ 		setfocus(c);
+ 	}
+ 	else
+@@ -1293,8 +1294,10 @@ monocle(Monitor *m) {
+ 			n++;
+ 	if(n > 0) /* override layout symbol */
+ 		snprintf(m->ltsymbol, sizeof m->ltsymbol, "[%d]", n);
+-	for(c = nexttiled(m->clients); c; c = nexttiled(c->next))
+-		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, False);
++	for(c = nexttiled(m->clients); c; c = nexttiled(c->next)) {
++		resize(c, m->wx - c->bw, m->wy - c->bw, m->ww, m->wh, False);
++		XSetWindowBorder(dpy, c->win, dc.colors[0][ColBG]);
++	}
+ }
+ 
+ void

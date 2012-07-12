@@ -1,0 +1,85 @@
+--- dwm.c.orig	2012-04-29 19:07:00.000000000 +0200
++++ dwm.c	2012-04-29 19:07:40.237787666 +0200
+@@ -120,10 +120,15 @@ typedef struct {
+ } Key;
+ 
+ typedef struct {
++	const char *icon;
+ 	const char *symbol;
+ 	void (*arrange)(Monitor *);
+ } Layout;
+ 
++typedef struct {
++	const char *icon;
++} MonocleNumberedIcon;
++
+ struct Monitor {
+ 	char ltsymbol[16];
+ 	int num;
+@@ -188,6 +193,7 @@ static void die(const char *errstr, ...)
+ static Monitor *dirtomon(int dir);
+ static void drawbar(Monitor *m);
+ static void drawbars(void);
++static void drawicon(const char *file, unsigned long col[ColLast]);
+ static void drawcoloredtext(char *text);
+ static void drawsquare(Bool filled, Bool empty, unsigned long col[ColLast]);
+ static void drawtext(const char *text, unsigned long col[ColLast], Bool pad);
+@@ -750,7 +756,7 @@ dirtomon(int dir) {
+ void
+ drawbar(Monitor *m) {
+ 	int x;
+-	unsigned int i, occ = 0, urg = 0;
++	unsigned int i, occ = 0, urg = 0, n = 0;
+ 	unsigned long *col;
+ 	Client *c;
+ 
+@@ -767,8 +773,26 @@ drawbar(Monitor *m) {
+ 		drawsquare(m == selmon && selmon->sel && selmon->sel->tags & 1 << i, occ & 1 << i, col);
+ 		dc.x += dc.w;
+ 	}
+-	dc.w = blw = TEXTW(m->ltsymbol);
+-	drawtext(m->ltsymbol, dc.colors[0], True);
++	blw = TEXTW(m->ltsymbol);
++
++	if(useicons) {
++		dc.w = dc.h;
++		if(selmon->lt[selmon->sellt]->arrange == monocle) {
++			for(c = m->clients; c; c = c->next)
++				if(ISVISIBLE(c))
++					n++;
++			if(n < LENGTH(monoclenumberedicons))
++				drawicon(monoclenumberedicons[n].icon, dc.colors[0]);
++			else
++				drawicon(m->lt[m->sellt]->icon, dc.colors[0]);
++		}
++	 	else
++			drawicon(m->lt[m->sellt]->icon, dc.colors[0]);
++	}
++	else {
++		dc.w = blw;
++		drawtext(m->ltsymbol, dc.colors[0], False);
++	}
+ 	dc.x += dc.w;
+ 	x = dc.x;
+ 	if(m == selmon) { /* status is only drawn on selected monitor */
+@@ -835,6 +859,20 @@ drawcoloredtext(char *text) {
+ }
+ 
+ void
++drawicon(const char *file, unsigned long col[ColLast]) {
++    Pixmap icon;
++    int px, py;
++    unsigned int pw, ph;
++    icon = XCreatePixmap(dpy, dc.drawable, dc.h, dc.h, 1);
++    XReadBitmapFile(dpy, dc.drawable, file, &pw, &ph, &icon, &px, &py);
++    XSetForeground(dpy, dc.gc, col[ColBG]);
++    XFillRectangle(dpy, dc.drawable, dc.gc, dc.x, 0, dc.h, dc.h);
++    XSetForeground(dpy, dc.gc, col[ColFG]);
++    XSetBackground(dpy, dc.gc, col[ColBG]);
++    XCopyPlane(dpy, icon, dc.drawable, dc.gc, px, py, pw, ph, dc.x, dc.h/2-ph/2+py, 1);
++}
++
++void
+ drawsquare(Bool filled, Bool empty, unsigned long col[ColLast]) {
+ 	int x;
+ 	XSetForeground(dpy, dc.gc, col[ ColFG ]);

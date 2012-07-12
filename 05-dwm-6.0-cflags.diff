@@ -1,0 +1,11 @@
+--- config.mk.orig	2011-07-10 22:24:25.000000000 +0200
++++ config.mk	2011-07-11 18:40:23.073559357 +0200
+@@ -21,7 +21,7 @@ LIBS = -L/usr/lib -lc -L${X11LIB} -lX11
+ # flags
+ CPPFLAGS = -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
+ #CFLAGS = -g -std=c99 -pedantic -Wall -O0 ${INCS} ${CPPFLAGS}
+-CFLAGS = -std=c99 -pedantic -Wall -Os ${INCS} ${CPPFLAGS}
++CFLAGS = -march=native -std=c99 -pedantic -Wall -O2 ${INCS} ${CPPFLAGS}
+ #LDFLAGS = -g ${LIBS}
+ LDFLAGS = -s ${LIBS}
+ 
